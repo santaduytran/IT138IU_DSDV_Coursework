@@ -1,0 +1,413 @@
+<html>
+  <head>
+    <title>Lab 2</title>
+      <h2>Trần Nguyễn Khánh Duy</h2>
+      <p>ID: ITDSIU18049</br>
+         Course: Data science and data visualization</br>
+         Lab 2 - Introduction to D3.js</br>
+         This is all my own work. I did not copy the code from any other source</p>
+  </head>
+      <body>
+        <script type="text/javascript" src="https://d3js.org/d3.v5.min.js"></script>
+        <script type="text/javascript">
+          var dataset = [ 5, 10, 13, 19, 21, 25, 22, 18, 15, 13, 11, 12, 15, 20, 18, 17, 16, 18, 23, 25 ];
+          var w = 700;
+          var h = 100;
+          var barPadding = 1;
+          var svg = d3.select("body")
+                      .append("svg")
+                      .attr("width",w)
+                      .attr("height",h)
+
+              svg.selectAll("rect")
+                 .data(dataset)
+                 .enter()
+                 .append("rect")
+                 .attr("x",function(d,i){return i*(w/dataset.length);})
+                 .attr("y", function(d) {return h - 3*d;})
+                 .attr("width", w / dataset.length - barPadding)
+                 .attr("height", function(d){return d * 4;})
+                 .attr("fill", function(d) {return "rgb(30, 144, " + Math.round(d * 10) + ")"; })
+              svg.selectAll("text")
+                 .data(dataset)
+                 .enter()
+                 .append("text")
+                 .text(function(d) {return d;})
+                 .attr("text-anchor", "middle")
+                 .attr("font-family", "sans-serif")
+                 .attr("font-size", "11px")
+                 .attr("fill", "white")
+                 .attr("x", function(d, i) {
+                   return i * (w / dataset.length) + (w / dataset.length - barPadding) / 2;
+                 })
+                 .attr("y", function(d) {return h - (d * 3)+12;})
+			   svg.append("text")
+                  .attr("x", (w/2))
+                  .attr("y", 15)
+                  .attr("text-anchor", "middle")
+			      .style("font-size", "23px")
+                  .text("Bar chart");
+                
+        </script>
+        <script>
+                var w=1000;
+                var h=1000;
+                d3.csv("https://tungth.github.io/data/vis-lab2-data.csv").then(function(data) {
+                  console.log(data);
+                  var dataset = [];
+                  var svg = d3.select("body")
+                              .append("svg")
+                              .attr("width", w)
+                              .attr("height", h)
+                              .attr("viewBox","0 -15 2000 1000");
+
+                  for (i=0; i<data.length; i++){
+                      var midterm = data[i].Midterm;
+                      var final = data[i].Final;
+                      dataset.push([midterm,final]);
+                  }
+                  svg.selectAll("circle")
+                     .data(dataset)
+                     .enter()
+                     .append("circle")
+                     .attr("cx", function(d) {
+                       return d[0]*20;
+                     })
+                     .attr("cy", function(d) {
+                       return (h-d[1])*5;
+                     })
+                     .attr("r", "10px")
+                     .attr("fill", function(d){
+                       if (d[0]*0.4+d[1]*0.6 < 50){
+                          return "red";
+                        }else{
+                          return "green";
+                        }
+                     });
+                  svg.selectAll('text')
+                     .data(dataset)
+                     .enter()
+                     .append('text')
+                     .text(function(d){
+                        return d[0]+','+d[1];
+                        })
+                     .attr("x", function(d){
+                          return d[0]*20;
+                      })
+                     .attr("y", function(d){
+                        return (h-d[1])*5;
+                      })
+                     .attr("font-family","sans-serif")
+                     .attr("font-size","5px")
+                     .attr("fill","blue")
+				  svg.append("text")
+                     .attr("x", w )
+                     .attr("y", 500 )
+                     .attr("text-anchor", "middle")
+                     .style("font-size", "125px")
+                     .text("Scatterplot");
+                });
+        </script>
+		<script>
+          var w=500;
+          var h=200;
+          d3.csv("https://tungth.github.io/data/vis-lab2-data.csv").then(function(data) {
+            console.log(data);
+            var datasetmid = [];
+            var Score_from_0_to_10 = 0;
+            var Score_from_11_to_20 = 0;
+            var Score_from_21_to_30 = 0;
+            var Score_from_31_to_40 = 0;
+            var Score_from_41_to_50 = 0;
+            var Score_from_51_to_60 = 0;
+            var Score_from_61_to_70= 0;
+            var Score_from_71_to_80 = 0;
+            var Score_from_81_to_90 = 0;
+            var Score_from_91_to_100 = 0;
+            var svg = d3.select("body")
+                        .append("svg")
+                        .attr("width", w)
+                        .attr("height", h);
+            for (i=0; i<data.length;i++){
+                datasetmid.push(data[i].Midterm);
+            }
+            console.log(datasetmid);
+            for (i=0; i<datasetmid.length; i++){
+              if (datasetmid[i] >=0 && datasetmid[i] <= 10){
+                Score_from_0_to_10++;
+              }
+              else if (datasetmid[i] > 10 && datasetmid[i] <= 20){
+                Score_from_11_to_20++;
+              }
+              else if (datasetmid[i] >20 && datasetmid[i] <= 30){
+                Score_from_21_to_30++;
+              }
+              else if (datasetmid[i] >30 && datasetmid[i] <= 40){
+                Score_from_31_to_40++;
+              }
+              else if (datasetmid[i] >40 && datasetmid[i] <= 50){
+                Score_from_41_to_50++;
+              }
+              else if (datasetmid[i] >50 && datasetmid[i] <= 60){
+                Score_from_51_to_60++;
+              }
+              else if (datasetmid[i] >60 && datasetmid[i] <= 70){
+                Score_from_61_to_70++;
+              }
+              else if (datasetmid[i] >70 && datasetmid[i] <= 80){
+                Score_from_71_to_80++;
+              }
+              else if (datasetmid[i] >80 && datasetmid[i] <= 90){
+                Score_from_81_to_90++;
+              }
+              else {
+                Score_from_91_to_100++;
+              }
+            }
+            var dataset = [Score_from_0_to_10,Score_from_11_to_20,Score_from_21_to_30,Score_from_31_to_40,Score_from_41_to_50,Score_from_51_to_60,Score_from_61_to_70,Score_from_71_to_80,Score_from_81_to_90,Score_from_91_to_100];
+            console.log(dataset);
+            svg.selectAll("rect")
+               .data(dataset)
+               .enter()
+               .append("rect")
+               .attr("x",function(d,i){
+                 return i*(w/dataset.length);
+               })
+               .attr("y", function(d) {
+                 return h - 3*d;
+               })
+               .attr("width", w / dataset.length - barPadding)
+               .attr("height", function(d){
+                 return d * 4;
+               })
+               .attr("fill", function(d) {
+                return "rgb(0, 250, " + Math.round(d * 10) + ")";
+               })
+            svg.selectAll("text")
+               .data(dataset)
+               .enter()
+               .append("text")
+               .text(function(d) {
+                 return d;
+               })
+               .attr("text-anchor", "middle")
+               .attr("font-family", "sans-serif")
+               .attr("font-size", "11px")
+               .attr("fill", "white")
+               .attr("x", function(d, i) {
+                 return i * (w / dataset.length) + (w / dataset.length - barPadding) / 2;
+               })
+               .attr("y", function(d) {
+                 return h - (d * 3)+12;
+                });
+            svg.append("text")
+               .attr("x", (w / 2))
+               .attr("y", 50 )
+               .attr("text-anchor", "middle")
+               .style("font-size", "25px")
+               .text("Midterm-Exam Score");
+
+            });
+        </script>
+		<script>
+          var w=500;
+          var h=200;
+          d3.csv("https://tungth.github.io/data/vis-lab2-data.csv").then(function(data) {
+            console.log(data);
+            var datasetfinal = [];
+            var Score_from_0_to_10 = 0;
+            var Score_from_11_to_20 = 0;
+            var Score_from_21_to_30 = 0;
+            var Score_from_31_to_40 = 0;
+            var Score_from_41_to_50 = 0;
+            var Score_from_51_to_60 = 0;
+            var Score_from_61_to_70= 0;
+            var Score_from_71_to_80 = 0;
+            var Score_from_81_to_90 = 0;
+            var Score_from_91_to_100 = 0;
+            var svg = d3.select("body")
+                        .append("svg")
+                        .attr("width", w)
+                        .attr("height", h);
+            for (i=0; i<data.length;i++){
+                datasetfinal.push(data[i].Final);
+            }
+            console.log(datasetfinal);
+            for (i=0; i<datasetfinal.length; i++){
+              if (datasetfinal[i] >=0 && datasetfinal[i] <= 10){
+                Score_from_0_to_10++;
+              }
+              else if (datasetfinal[i] > 10 && datasetfinal[i] <= 20){
+                Score_from_11_to_20++;
+              }
+              else if (datasetfinal[i] >20 && datasetfinal[i] <= 30){
+                Score_from_21_to_30++;
+              }
+              else if (datasetfinal[i] >30 && datasetfinal[i] <= 40){
+                Score_from_31_to_40++;
+              }
+              else if (datasetfinal[i] >40 && datasetfinal[i] <= 50){
+                Score_from_41_to_50++;
+              }
+              else if (datasetfinal[i] >50 && datasetfinal[i] <= 60){
+                Score_from_51_to_60++;
+              }
+              else if (datasetfinal[i] >60 && datasetfinal[i] <= 70){
+                Score_from_61_to_70++;
+              }
+              else if (datasetfinal[i] >70 && datasetfinal[i] <= 80){
+                Score_from_71_to_80++;
+              }
+              else if (datasetfinal[i] >80 && datasetfinal[i] <= 90){
+                Score_from_81_to_90++;
+              }
+              else {
+                Score_from_91_to_100++;
+              }
+            }
+            var dataset = [Score_from_0_to_10,Score_from_11_to_20,Score_from_21_to_30,Score_from_31_to_40,Score_from_41_to_50,Score_from_51_to_60,Score_from_61_to_70,Score_from_71_to_80,Score_from_81_to_90,Score_from_91_to_100];
+            console.log(dataset);
+            svg.selectAll("rect")
+               .data(dataset)
+               .enter()
+               .append("rect")
+               .attr("x",function(d,i){
+                 return i*(w/dataset.length);
+               })
+               .attr("y", function(d) {
+                 return h - 3*d;
+               })
+               .attr("width", w / dataset.length - barPadding)
+               .attr("height", function(d){
+                 return d * 4;
+               })
+               .attr("fill", function(d) {
+                return "rgb(132, 51, " + Math.round(d * 10) + ")";
+               })
+            svg.selectAll("text")
+               .data(dataset)
+               .enter()
+               .append("text")
+               .text(function(d) {
+                 return d;
+               })
+               .attr("text-anchor", "middle")
+               .attr("font-family", "sans-serif")
+               .attr("font-size", "11px")
+               .attr("fill", "white")
+               .attr("x", function(d, i) {
+                 return i * (w / dataset.length) + (w / dataset.length - barPadding) / 2;
+               })
+               .attr("y", function(d) {
+                 return h - (d * 3)+12;
+                });
+            svg.append("text")
+               .attr("x", (w / 2))
+               .attr("y", 50)
+               .attr("text-anchor", "middle")
+               .style("font-size", "25px")
+               .text("Final-Exam Score");
+            });
+          </script>
+		  <script>
+          var w=500;
+          var h=200;
+          d3.csv("https://tungth.github.io/data/vis-lab2-data.csv").then(function(data) {
+            console.log(data);
+            var datasetfinalscore = [];
+            var Score_from_0_to_10 = 0;
+            var Score_from_11_to_20 = 0;
+            var Score_from_21_to_30 = 0;
+            var Score_from_31_to_40 = 0;
+            var Score_from_41_to_50 = 0;
+            var Score_from_51_to_60 = 0;
+            var Score_from_61_to_70= 0;
+            var Score_from_71_to_80 = 0;
+            var Score_from_81_to_90 = 0;
+            var Score_from_91_to_100 = 0;
+            var svg = d3.select("body")
+                        .append("svg")
+                        .attr("width", w)
+                        .attr("height", h);
+            for (i=0; i<data.length;i++){
+                datasetfinalscore.push(data[i].Midterm*0.4+data[i].Final*0.6);
+            }
+            console.log(datasetfinalscore);
+            for (i=0; i<datasetfinalscore.length; i++){
+              if (datasetfinalscore[i] >=0 && datasetfinalscore[i] <= 10){
+                Score_from_0_to_10++;
+              }
+              else if (datasetfinalscore[i] > 10 && datasetfinalscore[i] <= 20){
+                Score_from_11_to_20++;
+              }
+              else if (datasetfinalscore[i] >20 && datasetfinalscore[i] <= 30){
+                Score_from_21_to_30++;
+              }
+              else if (datasetfinalscore[i] >30 && datasetfinalscore[i] <= 40){
+                Score_from_31_to_40++;
+              }
+              else if (datasetfinalscore[i] >40 && datasetfinalscore[i] <= 50){
+                Score_from_41_to_50++;
+              }
+              else if (datasetfinalscore[i] >50 && datasetfinalscore[i] <= 60){
+                Score_from_51_to_60++;
+              }
+              else if (datasetfinalscore[i] >60 && datasetfinalscore[i] <= 70){
+                Score_from_61_to_70++;
+              }
+              else if (datasetfinalscore[i] >70 && datasetfinalscore[i] <= 80){
+                Score_from_71_to_80++;
+              }
+              else if (datasetfinalscore[i] >80 && datasetfinalscore[i] <= 90){
+                Score_from_81_to_90++;
+              }
+              else {
+                Score_from_91_to_100++;
+              }
+            }
+            var dataset = [Score_from_0_to_10,Score_from_11_to_20,Score_from_21_to_30,Score_from_31_to_40,Score_from_41_to_50,Score_from_51_to_60,Score_from_61_to_70,Score_from_71_to_80,Score_from_81_to_90,Score_from_91_to_100];
+            console.log(dataset);
+            svg.selectAll("rect")
+               .data(dataset)
+               .enter()
+               .append("rect")
+               .attr("x",function(d,i){
+                 return i*(w/dataset.length);
+               })
+               .attr("y", function(d) {
+                 return h - 3*d;
+               })
+               .attr("width", w / dataset.length - barPadding)
+               .attr("height", function(d){
+                 return d * 4;
+               })
+               .attr("fill", function(d) {
+                return "rgb(34, 139, " + Math.round(d * 10) + ")";
+               })
+            svg.selectAll("text")
+               .data(dataset)
+               .enter()
+               .append("text")
+               .text(function(d) {
+                 return d;
+               })
+               .attr("text-anchor", "middle")
+               .attr("font-family", "sans-serif")
+               .attr("font-size", "11px")
+               .attr("fill", "white")
+               .attr("x", function(d, i) {
+                 return i * (w / dataset.length) + (w / dataset.length - barPadding) / 2;
+               })
+               .attr("y", function(d) {
+                 return h - (d * 3)+12;
+                });
+            svg.append("text")
+               .attr("x", (w / 2))
+               .attr("y", 50)
+               .attr("text-anchor", "middle")
+               .style("font-size", "25px")
+               .text("Final Score");
+            });
+        </script>
+      </body>
+</html>
