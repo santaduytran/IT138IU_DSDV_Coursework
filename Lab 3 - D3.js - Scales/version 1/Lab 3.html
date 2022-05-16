@@ -1,0 +1,92 @@
+<html>
+  <head>
+    <title> Lab 3 </title>
+    <h3>Name: TRAN NGUYEN KHANH DUY</h3>
+    <h4>ID: ITDSIU18049<br/>
+        Course: Data science and data visualization<br/>
+        Lab3 - D3.js - Scales</h4>
+    <p> This is all my own work. I did not copy the code from any other source</p>
+  </head>
+  <body>
+      <script type="text/javascript" src="https://d3js.org/d3.v5.min.js"></script>
+      <script type="text/javascript">
+    d3.csv("https://tungth.github.io/data/vn-provinces-data.csv", function(d){
+        return{
+          population: parseFloat(d.population),
+          grdp: parseFloat(d["GRDP-VND"].replace(/,/g,'.')),
+          area: parseFloat(d.area),
+          density: parseFloat(d.density)
+        };
+      })
+        .then(function(data) {
+
+	           console.log(data);
+
+          var w = 300;
+          var h = 600;
+          var padding1 = 25;
+          var padding2 = 20;
+          var svg = d3.select("body")
+                      .append("svg")
+                      .attr("weight",w)
+                      .attr("height",h);
+         var scalePopulation = d3.scaleLinear()
+                                  .domain([d3.min(data, function(d){return d.population;}),d3.max(data,function(d){return d.population;})])
+                                  .range([padding1,w-padding1]);
+         var scaleGrdp = d3.scaleLinear()
+                            .domain([d3.min(data, function(d){return d.grdp;}),d3.max(data,function(d){return d.grdp;})])
+                            .range([h- padding1-72, padding1]);
+         var scaleR = d3.scaleLinear()
+                         .domain([d3.min(data,function(d){return d.area;}),d3.max(data, function(d){return d.area;})])
+                         .range([2,9]);
+         var scaleX = d3.scaleLinear()
+                        .domain([0,d3.max(data,function(d){return d.population;})])
+                        .range([25,w-padding1+8]);
+         var scaleY = d3.scaleLinear()
+                       .domain([0,d3.max(data,function(d){return d.grdp;})])
+                       .range([h-padding2,padding1-18]);
+         var scalecolour = d3.scaleQuantize()
+                             .domain([d3.min(data,function(d){return d.density;}), d3.max(data,function(d){return d.density})])
+                             .range(['aqua', 'orange','green','pink','red',]);
+          svg.selectAll("circle")
+             .data(data)
+             .enter()
+             .append("circle")
+             .attr("cx", function(d){
+               return scalePopulation(d.population)+10
+             })
+             .attr("cy", function(d){
+               return 1.027*scaleGrdp(d.grdp)-13
+             })
+             .attr("r",function(d){
+               return scaleR(d.area)
+             })
+             .attr("fill",function(d){
+               return scalecolour(d.density)
+             });
+
+          var xAxis = d3.axisBottom(scaleX);
+          svg.append("g")
+             .attr("class", "axis")
+             .attr("transform","translate(0," + (h - padding2)+ ")")
+             .call(xAxis);
+          var yAxis = d3.axisLeft(scaleY)
+                        .ticks(20);
+          svg.append("g")
+             .attr("class","y axis")
+             .attr("transform", "translate("+ (w-275) + ",0)")
+             .call(yAxis);
+          svg.append("text")
+             .attr("x",230)
+             .attr("y",h-padding1)
+             .text("population");
+          svg.append("text")
+             .attr("y", 9)
+             .attr("x", 0)
+             .style("font","11px times")
+             .text("GRDP-VND");
+  });
+      </script>
+    </body>
+  </head>
+</html>
