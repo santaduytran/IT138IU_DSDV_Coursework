@@ -1,0 +1,12 @@
+h3{color: green;}
+h4.id{font-weight: bold;}
+h4.course{font-weight: bold;}
+h4.labname{font-weight: normal; font-style: italic;}
+  .axis path,
+  .axis line {stroke: teal; shape-rendering: crispEdges;}
+  .axis text {
+	font-family: Optima, Futura, sans-serif;
+	font-weight: bold;
+	font-size: 14px;
+	fill: teal;
+   }
