@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lab 5</title>
+    <body>
+        <h3>Trần Nguyễn Khánh Duy</h3>
+        <h4>ITDSIU18049</h4>
+        <p><i>Course Title: Data Science and Data Visualization</p></i>
+        <h4><i>Lab 5 - D3.js - Interaction</h4></i>
+        <p>This is my own work. I did not copy the code from any other source.</p>
+    </body>
+</html>
+
+<!DOCTYPE html>
+<html>
+<body>
+
+    <meta charset = "utf-8">
+    <script src = "https://d3js.org/d3.v4.js"></script>
+    <div id = "my_dataviz"></div>
+    <style>
+        .selected {fill: rgb(39, 89, 224); opacity: 0.9;}
+        
+        div.tooltip {
+            position: absolute;
+            text-align: center;
+            width: auto;
+            height: auto;
+            padding: 6px;
+            font: 14px sans-serif;
+            background: rgb(200, 203, 206);
+            border: 5px;
+            border-radius: 8px;
+            pointer-events: none;
+        }
+    </style>
+    <script>
+    // Set the dimensions and margins of the graph
+    var margin = {top: 30,
+                  right: 80,
+                  bottom: 60,
+                  left: 80
+                 },
+        width = 1500,
+        height = 2000;
+
+
+    // Define the div for the tooltip
+    var div = d3.select("body")
+		        .append("div")
+                .attr("class", "tooltip")
+                .style("opacity", 0);
+
+
+        // Append the svg object to the body of the page
+    var svg = d3.select("#my_dataviz")
+                .append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+    var rowConverter = function(d) {
+        return {PS: d["Province/State"],
+                CR: d["Country/Region"],
+                Lat: parseFloat(d.Lat),
+                Long: parseFloat(d.Long),
+                may4: parseInt(d["5/4/20"])
+            }
+    }
+
+
+    //Read the data
+d3.csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv", rowConverter, function(error, data) {
+    if (error) {console.log(error);}
+	else {console.log(data);
+        newData = data.filter(d => d.may4 > 0)
+    
+	// Add X axis
+    var x = d3.scaleLinear()
+              .domain([-150, d3.max(data, function(d) {return d.Long;})])
+              .range([0, width]);
+    svg.append("g")
+       .attr("transform", "translate(0," + height + ")")
+       .call(d3.axisBottom(x));
+
+
+    // Add Y axis
+    var y = d3.scaleLinear()
+              .domain([-60, d3.max(data, function(d) {return d.Lat;})])
+              .range([height, 0]);
+    svg.append("g")
+       .call(d3.axisLeft(y));
+    // Add X axis label:
+    svg.append("text")
+       .attr("text-anchor", "end")
+       .attr("x", width / 2 + 30)
+       .attr("y", height + 40)
+       .text("Longitude");
+    // Add Y axis label:
+    svg.append("text")
+       .attr("text-anchor", "end")
+       .attr("transform", "rotate(-90)")
+       .attr("y", -margin.left + 35)
+       .attr("x", -margin.top - height / 2 + 70)
+       .text("Latitude")
+    // Add brushing
+    svg.append("g")
+       .call(d3.brush()
+               .extent([
+                       [0, 0],
+                       [width, height]
+                      ])
+               .on("start brush", updateChart))
+    // Define radius of circle
+    var r = d3.scaleLinear()
+              .domain([0, d3.max(newData, function(d) {return d.may4;})])
+              .range([5, 17])
+    // Add circles
+  var myCircle = svg.append("g")
+                    .selectAll("circle")
+                    .data(newData)
+                    .enter()
+                    .append("circle")
+                    .attr("fill", "#1a73b3")
+                    .attr("opacity", 0.7)
+                    .attr("cx", function(d) {return x(d.Long);})
+                    .attr("cy", function(d) {return y(d.Lat);})
+                    .attr("r", function(d) {return r(d.may4)})
+                    .style("stroke", "black")
+                    .style("stroke-width", 1.1)
+                    .on("mouseover", function(d) {
+                        div.transition()
+                           .duration(300)
+                           .style("opacity", 0.9);
+                        div.html((d.PS).concat(" " + d.CR).bold() + " <br>Cases: " + d.may4)
+                           .style("left", (d3.event.pageX) + "px")
+                           .style("top", (d3.event.pageY - 28) + "px");
+                })
+
+                    .on("mouseout", function(d) {
+                        div.transition()
+                           .duration(500)
+                           .style("opacity", 0);
+                });
+
+
+    // Function that is triggered when brushing is performed
+    function updateChart() {
+        extent = d3.event.selection
+        myCircle.classed("selected", function(d) {
+                        return isBrushed(extent, x(d.Long), y(d.Lat))})
+    }
+
+    // A function that return TRUE or FALSE according if a dot is in the selection or not
+    function isBrushed(brush_coords, cx, cy) {
+        var x0 = brush_coords[0][0],
+            x1 = brush_coords[1][0],
+            y0 = brush_coords[0][1],
+            y1 = brush_coords[1][1];
+        return x0 <= cx && cx <= x1 && y0 <= cy && cy <= y1;
+                }
+    }
+    })
+    </script>
+</body>
+</html>
