@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lab 6</title>
+    <body>
+        <h3>Trần Nguyễn Khánh Duy</h3>
+        <h4>ITDSIU18049</h4>
+        <p><i>Course Title: Data Science and Data Visualization</p></i>
+        <h4><i>Lab 6 - D3.js - Line and stacked area chart</h4></i>
+        <p>This is my own work. I did not copy the code from any other source.</p>
+    </body>
+</head>	
+</html>
+
+<meta charset="utf-8">
+<script src="https://d3js.org/d3.v4.js"></script>
+<div id="my_dataviz"></div>
+<script>
+    // Set the dimensions and margins of the graph
+    var margin = {
+            top: 40,
+            right: 180,
+            bottom: 60,
+            left: 100
+        },
+        width = 980 - margin.right,
+        height = 450;
+
+
+    // Append the svg object to the body of the page
+    var svg = d3.select("#my_dataviz")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform",
+            "translate(" + margin.left + "," + margin.top + ")");
+
+
+    var rowConverter = function(d) {
+        return {
+            Country: d.Country,
+            Cases: parseInt(d["Confirmed"]),
+            Date: d3.timeParse("%m/%d/%Y")(d.Date)
+        }
+    }
+
+
+    //Read the data
+    d3.csv("https://raw.githubusercontent.com/vvviet2908/DS-DV/master/COVID19_data_Lab6_DSDV.csv", rowConverter, function(error, data) {
+        if (error) {
+            console.log(error);
+        } else {
+            console.log(data);
+
+            var bisectDate = d3.bisector(function(d) {
+                return d.Date;
+            }).left;
+
+            // Group the data: group country name
+            var sumstat = d3.nest()
+                .key(function(d) {
+                    return d.Country;
+                })
+                .entries(data);
+
+
+            // Add X axis --> it is a date format
+            var x = d3.scaleTime()
+                .domain(d3.extent(data, function(d) {
+                    return d.Date;
+                }))
+                .range([0, width]);
+            xAxis = svg.append("g")
+                .attr("transform", "translate(0," + height + ")")
+                .call(d3.axisBottom(x)
+                    .tickFormat(d3.timeFormat('%B %d')))
+
+
+            // Add Y axis
+            var y = d3.scaleLinear()
+                .domain([0, d3.max(data, function(d) {
+                    return +d.Cases;
+                })])
+                .range([height, 0]);
+            yAxis = svg.append("g")
+                .call(d3.axisLeft(y));
+
+
+            // Add X axis label:
+            svg.append("text")
+                .attr("text-anchor", "end")
+                .attr("x", width / 2 + 35)
+                .attr("y", height + 45)
+                .text("Year 2020");
+
+            // Y axis label:
+            svg.append("text")
+                .attr("text-anchor", "end")
+                .attr("transform", "rotate(-90)")
+                .attr("y", -margin.left + 35)
+                .attr("x", -margin.top - height / 2 + 95)
+                .text("Confirmed cases")
+
+
+            // Color palette
+            var res = sumstat.map(function(d) {
+                    return d.key
+                }) // list of country names
+            var color = d3.scaleOrdinal()
+                .domain(res)
+                .range(['#e41a1c', '#377eb8', '#4daf4a', '#984ea3'])
+
+
+            // Draw the line
+            svg.selectAll(".line")
+                .data(sumstat)
+                .enter()
+                .append("path")
+                .attr("fill", "none")
+                .attr("class", function(d) {
+                    return "line " + d.key
+                })
+                .attr("stroke", function(d) {
+                    return color(d.key)
+                })
+                .attr("stroke-width", 2.5)
+                .attr("d", function(d) {
+                    return d3.line()
+                        .x(function(d) {
+                            return x(d.Date);
+                        })
+                        .y(function(d) {
+                            return y(+d.Cases);
+                        })
+                        (d.values)
+                })
+
+
+            // Highlight the country that is hovered
+            var highlight = function(d) {
+                d3.selectAll(".line")
+                    .transition()
+                    .duration(300)
+                    .attr("opacity", 0.15)
+
+                d3.selectAll("." + d.key)
+                    .transition()
+                    .duration(200)
+                    .attr("opacity", 1)
+                    .attr("stroke-width", 3.5)
+            }
+
+            // Do not highlight
+            var doNotHighlight = function() {
+                d3.selectAll(".line")
+                    .transition()
+                    .duration(500)
+                    .attr("opacity", 1)
+                    .attr("stroke-width", 2.5)
+            }
+
+
+            // Add one dot in the legend for each name.
+            var size = 20
+            svg.selectAll("mydots")
+                .data(sumstat)
+                .enter()
+                .append("circle")
+                .attr("cx", 830)
+                .attr("cy", function(d, i) {
+                    return 10 + i * (size + 5)
+                }) // 100 is where the first dot appears. 25 is the distance between dots
+                .attr("r", 7)
+                .attr("fill", function(d) {
+                    return color(d.key)
+                })
+                .on("mouseover", highlight)
+                .on("mouseleave", doNotHighlight)
+
+
+            // Add labels beside legend dots
+            svg.selectAll("mylabels")
+                .data(sumstat)
+                .enter()
+                .append("text")
+                .attr("x", 830 + size * .8)
+                .attr("y", function(d, i) {
+                    return i * (size + 5) + (size / 2)
+                }) // 100 is where the first dot appears. 25 is the distance between dots
+                .style("fill", function(d) {
+                    return color(d.key)
+                })
+                .text(function(d) {
+                    return d.key
+                })
+                .attr("text-anchor", "left")
+                .style("alignment-baseline", "middle")
+                .on("mouseover", highlight)
+                .on("mouseleave", doNotHighlight)
+
+
+            // Cursors
+            var mouseG = svg.append("g")
+                .attr("class", "mouse-over-effects");
+
+            mouseG.append("path") // this is the black vertical line to follow mouse
+                .attr("class", "mouse-line")
+                .style("stroke", "black")
+                .style("stroke-width", "1px")
+                .style("opacity", "0");
+
+            var lines = document.getElementsByClassName('line');
+
+            var mousePerLine = mouseG.selectAll('.mouse-per-line')
+                .data(sumstat)
+                .enter()
+                .append("g")
+                .attr("class", "mouse-per-line");
+
+            mousePerLine.append("circle")
+                .attr("r", 6)
+                .style("stroke", function(d) {
+                    return color(d.key);
+                })
+                .style("fill", "none")
+                .style("stroke-width", 1.5)
+                .style("opacity", "0");
+
+            mousePerLine.append("text")
+                .attr("transform", "translate(10,0)");
+
+            mouseG.append('svg:rect') // append a rect to catch mouse movements on canvas
+                .attr('width', width) // can't catch mouse events on a g element
+                .attr('height', height)
+                .attr('fill', 'none')
+                .attr('pointer-events', 'all')
+                .on('mouseout', function() { // on mouse out hide line, circles and text
+                    d3.select(".mouse-line")
+                        .style("opacity", "0");
+                    d3.selectAll(".mouse-per-line circle")
+                        .style("opacity", "0");
+                    d3.selectAll(".mouse-per-line text")
+                        .style("opacity", "0");
+                })
+                .on('mouseover', function() { // on mouse in show line, circles and text
+                    d3.select(".mouse-line")
+                        .style("opacity", "1");
+                    d3.selectAll(".mouse-per-line circle")
+                        .style("opacity", "1");
+                    d3.selectAll(".mouse-per-line text")
+                        .style("opacity", "1");
+                })
+                .on('mousemove', function() { // mouse moving over canvas
+                    var mouse = d3.mouse(this);
+
+                    d3.selectAll(".mouse-per-line")
+                        .attr("transform", function(d, i) {
+
+                            var xDate = x.invert(mouse[0]),
+                                bisect = d3.bisector(function(d) {
+                                    return d.Date;
+                                }).left;
+                            idx = bisect(d.values, xDate);
+
+                            d3.select(this).select("text")
+                                .text(y.invert(y(d.values[idx].Cases)).toFixed(0));
+
+                            d3.select(".mouse-line")
+                                .attr("d", function() {
+                                    var data = "M" + x(d.values[idx].Date) + "," + height;
+                                    data += " " + x(d.values[idx].Date) + "," + 0;
+                                    return data;
+                                });
+                            return "translate(" + x(d.values[idx].Date) + "," + y(d.values[idx].Cases) + ")";
+                        });
+                });
+
+        }
+    })
+</script>
