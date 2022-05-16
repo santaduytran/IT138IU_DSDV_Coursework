@@ -1,0 +1,143 @@
+<html>
+  <head>
+    <title>Lab 6</title>
+    <h3>Name: Tran Nguyen Khanh Duy</h3>
+    <h3>ID: ITDSIU18049</h3>
+    <h3>Course: Data science and data visualization</h3>
+    <h3>Lab 6 – D3.js – Line and stacked area chart</h3>
+    <p>This is all my own work. I did not copy the code from any other source</p>
+  </head>
+  
+  <body>
+    <script type="text/javascript" src="https://d3js.org/d3.v5.min.js"></script>
+    <script type= "text/javascript">
+    d3.csv("https://raw.githubusercontent.com/tranquynhanh/book3.csv/master/datalab6.csv", function(d){
+        return{
+          country: d["Country"],
+          date: d3.timeParse("%m/%d/%Y")(d["Date"]),
+          confirmed: d["Confirmed"]
+        };
+    })
+        .then(function(data) {
+            console.log(data);
+
+            var nest = d3.nest()
+                         .key(function(d){
+                             return d.country;
+                          })
+                         .entries(data)
+            console.log(nest);
+
+            var w = 1000;
+            var h = 800;
+            var padding1 = 73;
+
+            var svg = d3.select("body")
+                        .append("svg")
+                        .attr("width",w)
+                        .attr("height",h);
+
+            var scaleX = d3.scaleTime()
+                           .domain([d3.min(data, function(d){return d.date}),d3.max(data, function(d){return d.date})])
+                           .range([ padding1, w/1.1 ]);
+						   
+            var scaleY = d3.scaleLinear()
+                           .domain([0,d3.max(data, function(d){return d.confirmed;})])
+                           .range([h-padding1,padding1]);
+						   
+            var xAxis = svg.append("g")
+                           .attr("class", "x axis")
+                           .attr("transform","translate(0," + (h - padding1)+ ")")
+                           .call(d3.axisBottom(scaleX));
+						   
+            var yAxis = d3.axisLeft(scaleY);
+			
+            svg.append("g")
+               .attr("class","y axis")
+               .attr("transform", "translate("+ padding1 + ",0)")
+               .call(yAxis);
+
+            var res = nest.map(function(d){ return d.key })
+            var color = d3.scaleOrdinal()
+                          .domain(res)
+                          .range(['#e41a1c','#377eb8','#4daf4a','#984ea3'])
+
+            const tooltip = d3.select("body").append("div")
+                              .attr("class", "tooltip")
+                              .style("opacity", 0)
+                              .style("position", "absolute");
+
+            const lines = svg.selectAll("lines")
+                             .data(nest)
+                             .enter()
+                             .append("g");
+
+            lines.append("path")
+                 .attr("class", function(d) { return "line " + d.key })
+                 .attr("fill","none")
+                 .attr("stroke-width", 2)
+                 .attr("stroke", function(d){ return color(d.key) })
+                 .attr("d", function(d){
+                    return d3.line()
+                             .x(function(d) { return scaleX(d.date); })
+                             .y(function(d) { return scaleY(+d.confirmed); })
+                 (d.values)
+                 });
+            lines.selectAll("points")
+                 .data(function(d) {return d.values})
+                 .enter()
+                 .append("circle")
+                 .attr("cx", function(d) { return scaleX(d.date); })
+                 .attr("cy", function(d) { return scaleY(d.confirmed); })
+                 .attr("r", 1)
+                 .attr("class","point")
+                 .style("fill", "blue")
+                 .attr("stroke", "black")
+                 .attr('r', 8.5)
+                 .style("opacity", 0)
+                 .on('mouseover', function(d) {
+                                    tooltip.transition()
+                                           .duration(200)
+                                           .style("opacity", 1)})
+                 .on('mousemove',function(d){
+                                    tooltip.html((d.confirmed) +"</span> cases")
+                                           .style("left", (parseFloat(d3.select(this).attr("cx"))-10) + "px")
+                                           .style("top", (parseFloat(d3.select(this).attr("cy"))+140) + "px");})
+                 .on("mouseout", function(d) {
+                                    tooltip.transition()
+                                           .duration(200)
+                                           .style("opacity", 0);});
+            var size = 20
+            var groups = ["Vietnam", "France", "Italy", "US"]
+            svg.selectAll("Rect")
+               .data(groups)
+               .enter()
+               .append("circle")
+               .attr("cx", 390)
+               .attr("cy", function(d,i){return 10 + i*(size+5)})
+               .attr("r", 7)
+               .style("fill", function(d){return color(d)})
+               .on("mouseover", function(d){
+                                    d3.selectAll(".line").style("opacity", .05)
+                                    d3.selectAll("."+d).style("opacity", 1)})
+               .on("mouseleave", function(d){
+                                    d3.selectAll(".line").style("opacity", 1)})
+            svg.selectAll("labels")
+               .data(groups)
+               .enter()
+               .append("text")
+               .attr("x", 390 + size*.8)
+               .attr("y", function(d,i){ return i * (size + 5) + (size/2)})
+               .text(function(d){ return d})
+               .attr("text-anchor", "left")
+               .style("alignment-baseline", "middle")
+               .on("mouseover", function(d){
+                                   d3.selectAll(".line").style("opacity", .05)
+                                   d3.selectAll("."+d).style("opacity", 1)})
+               .on("mouseleave", function(d){
+                                   d3.selectAll(".line").style("opacity", 1)})
+
+    });
+    </script>
+  </body>
+</html>
