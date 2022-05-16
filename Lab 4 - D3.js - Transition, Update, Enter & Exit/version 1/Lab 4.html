@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+
+<meta charset="UTF-8">
+
+<head>
+  <title>Lab 4</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+  <style type="text/css">
+        h4.id {font-weight: bold;}
+        h4.course {font-weight: bold;}
+        h2 {color: #6495ED;}
+        h4.labtitle {font-style: italic;
+                     font-weight: normal;}
+        text {font-weight: bold;}
+    </style>
+</head>
+
+<body>
+  <h2> Trần Nguyễn Khánh Duy </h2>
+  <h4 class="id"> ID: ITDSIU18049
+  <h4 class="course"> Course: Data science and data visualization </h4>
+  <h4 class="labtitle"> Lab 4 - D3.js - Transition, Update, Enter & Exit </h4>
+  <p> This is all my own work. I did not copy the code from any other source </p>
+</body>
+
+</html>
+
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<script src="https://d3js.org/d3.v4.js"></script>
+
+<!-- Initialize a select button -->
+
+<button type='button' id="add">Add Data</button>
+<button type='button' id="remove">Remove Data</button>
+
+
+<div id="my_dataviz"></div>
+
+<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+
+<script>
+    // Set the dimensions and margins of the graph
+    var margin = {
+            top: 30,
+            right: 30,
+            bottom: 60,
+            left: 100
+        },
+        width = 650,
+        height = 550;
+
+
+    // Append the svg object to the body of the page
+    var svg = d3.select("body")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform",
+            "translate(" + margin.left + "," + margin.top + ")");
+
+
+    var rowConverter = function(d) {
+        return {
+            GRDP: parseFloat(d["GRDP-VND"]),
+            province: d.province
+        }
+    }
+
+
+    //Read the data
+    d3.csv("https://tungth.github.io/data/vn-provinces-data.csv", rowConverter, function(error, data) {
+        if (error) {
+            console.log(error);
+        } else {
+            console.log(data);
+
+            var data20 = data.slice(0, 20)
+
+
+            // Add X axis
+            var x = d3.scaleLinear()
+                .range([0, width])
+                .domain([0, d3.max(data20, function(d) {
+                    return d.GRDP;
+                })]);
+            svg.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(0," + height + ")")
+                .call(d3.axisBottom(x));
+
+
+            // Y axis
+            var y = d3.scaleBand()
+                .range([0, height], 0.1)
+                .domain(data20.map(function(d) {
+                    return d.province;
+                }))
+                .padding(0.05);
+            svg.append("g")
+                .attr("class", "y axis")
+                .call(d3.axisLeft(y))
+
+
+            //Bars
+            var bars = svg.selectAll(".bar")
+                .data(data20)
+                .enter()
+                .append("g")
+
+            // Append rects
+            .append("rect")
+                .attr("class", "bar")
+                .attr("x", x(0.5))
+                .attr("y", function(d) {
+                    return y(d.province);
+                })
+                .attr("width", function(d) {
+                    return x(d.GRDP);
+                })
+                .attr("height", y.bandwidth())
+                .attr("fill", "#DE3163");
+
+
+            var data2 = data.slice(0, 64)
+
+            d3.selectAll("button")
+                .on("click", function() {
+                    var buttonID = d3.select(this).attr("id");
+
+                    //Decide what to do next
+                    if (buttonID == "add") {
+                        var dataUpdate = data2[Math.floor(Math.random() * data2.length)];
+                        data20.push(dataUpdate)
+
+                    } else if (buttonID == 'remove') {
+                        data20.pop(); //Remove one value from the bottom
+                    }
+
+
+                    // Update scale domain
+                    x.domain([0, d3.max(data20, function(d) {
+                        return d.GRDP;
+                    })])
+                    svg.select(".x.axis")
+                        .transition()
+                        .duration(800)
+                        .call(d3.axisBottom(x));
+
+
+                    y.domain(data20.map(function(d) {
+                        return d.province;
+                    }))
+                    svg.select(".y.axis")
+                        .transition()
+                        .duration(800)
+                        .call(d3.axisLeft(y));
+
+
+                    //Enter
+                    var bars = svg.selectAll(".bar")
+                        .data(data20)
+
+
+                    //now actually give each rectangle the corresponding data
+                    bars.enter()
+                        .append("rect")
+                        .attr("class", "bar")
+                        .attr("x", x(0.5))
+                        .attr("y", height)
+                        .attr("width", function(d) {
+                            return x(d.GRDP);
+                        })
+                        .attr("height", -y.bandwidth())
+
+                    .merge(bars)
+                        .transition()
+                        .duration(800)
+                        .on("start", function() { // <-- Executes at start of transition
+                            d3.select(this)
+                                .attr("fill", "#DE3163")
+                        })
+                        .attr("x", x(0.5))
+                        .attr("y", function(d) {
+                            return y(d.province);
+                        })
+                        .attr("width", function(d) {
+                            return x(d.GRDP);
+                        })
+                        .attr("height", y.bandwidth())
+                        .on("end", function() { // <-- Executes at end of transition
+                            d3.select(this)
+                                .attr("fill", "#DE3163")
+                        })
+
+
+                    var barsExit = svg.selectAll(".bar")
+                        .data(data20)
+                        .exit()
+                        .transition()
+                        .duration(600)
+                        .attr("y", height - y.bandwidth())
+                        .remove();
+
+                })
+
+        }
+
+    })
+</script>
