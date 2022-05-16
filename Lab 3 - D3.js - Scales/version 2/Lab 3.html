@@ -1,0 +1,128 @@
+<html>
+
+<head>
+    <title> Lab 3 </title>
+    <h2>TRẦN NGUYỄN KHÁNH DUY</h2>
+    <h3>ID: ITDSIU18049<br/>
+        Course: Data science and data visualization<br/>
+        Lab3 - D3.js - Scales</h3>
+    <p> This is all my own work. I did not copy the code from any other source</p>
+</head>
+
+<body>
+      <script type="text/javascript" src="https://d3js.org/d3.v5.min.js"></script>
+      <script type="text/javascript">
+
+d3.csv("https://tungth.github.io/data/vn-provinces-data.csv").then(function (data) {
+
+      //console.log(data[1]["GRDP-VND"])
+      var myArr = [];
+      for (var idx = 0; idx < data.length; idx++) {
+        myArr.push([
+          parseFloat(data[idx]["population"]),    // [][0]
+          parseFloat(data[idx]["GRDP-VND"]),      // [][1]
+          parseFloat(data[idx]["area"]),          // [][2]
+          parseFloat(data[idx]["density"]),        // [][3]
+          data[idx]["province"]                   //[][4]
+        ])
+        //console.log(myArr[idx])
+      }
+      var dataset = myArr;
+      console.log(dataset);
+      var outer_w = 700;
+      var outer_h = 480;
+      var margin = {top: 100, right: 20, bottom: 80, left: 80};
+      var w = outer_w - margin.left - margin.right;
+      var h = outer_h - margin.top - margin.bottom;
+      var padding = 20;
+
+      document.body.style.margin = "0px";
+      var svg = d3.select("body")
+        .append("svg")
+        .attr("width", outer_w)
+        .attr("height", outer_h);
+
+      var xScale = d3.scaleLinear()
+        .domain([0, d3.max(dataset, function (d) { return d[0]; })])
+        .range([0, w - padding]);
+      var yScale = d3.scaleLinear()
+        .domain([0, d3.max(dataset, function (d) { return d[1]; })])
+        .range([h - (padding), 0]);
+      var aScale = d3.scaleSqrt()
+        .domain([0, d3.max(dataset, function (d) { return d[2]; })])
+        .range([3, 10]);
+      var colorScale = d3.scaleLinear()
+        .domain([0, d3.max(dataset, function (d) { return d[3] })])
+        .range(["#6495ED", "#DE3163"]);  // 
+
+
+      // Add the data points to the scatter plot
+      svg.selectAll("circle")
+        .data(dataset)
+        .enter()
+        .append("circle")
+        .attr("cx", function (d) {
+          return (xScale(d[0]) + margin.left);
+        })
+        .attr("cy", function (d) {
+          return yScale(d[1]) + margin.top + padding;
+        })
+        .attr("r", function (d) {
+          return aScale(d[2])
+        })
+        .attr("fill", function (d) {
+          return colorScale(d[3]);
+        })
+        .attr("opacity", 0.8);
+
+      svg.selectAll("text")
+        .data(dataset)
+        .enter()
+        .append("text")
+        .attr("x", function (d) { return xScale(d[0]) + margin.left + 5 })
+        .attr("y", function (d) { return yScale(d[1]) + margin.top + padding })
+        .text(function (d) { return d[4] })
+        .attr("font-size", "5px")
+        .attr("fill", "black");
+
+      // Add the axis
+      var xAxis = d3.axisBottom()
+        .scale(xScale);
+      var g = svg.append("g")
+        .attr("class", "axis")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+      var yAxis = d3.axisLeft()
+        .scale(yScale);
+      g.append("g")
+        .attr("class", "axis")
+        .attr("transform", "translate(0," + (margin.top - margin.bottom) + ")")
+        .call(yAxis);
+      g.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + h + ")")
+        .call(xAxis);
+
+      g.append("text")                         //  x-axis label
+        .attr("class", "x label")
+        .attr("text-anchor", "end")
+        .attr("x", w - 300)
+        .attr("y", h + 50)
+        .attr("font-size", 17)
+        .text("Population");
+      g.append("text")                         //  y-axis label
+        .attr("class", "y label")
+        .attr("text-anchor", "end")
+        .attr("x", -30)
+        .attr("y", -50)
+        .attr("transform", "rotate(-90)")
+        .attr("font-size", 14)
+        .text("GRDP-VND (million VND/person/year)");
+
+    });
+
+  </script>
+</body>
+
+</html>
