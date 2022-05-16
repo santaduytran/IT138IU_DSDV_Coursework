@@ -1,0 +1,95 @@
+<html>
+  <meta charset="utf-8">
+    <head>
+        <title>Lab 1</title>
+            <style type="text/css">
+              h4.id {font-weight: bold;}
+              h4.course {font-weight: bold;}
+              h3 {color: #DC143C;}
+              h4.labtitle {font-style: italic;
+                           font-weight: normal;}
+              text {font-weight: bold;}
+            </style>
+    </head>
+    <body>
+        <h3> Trần Nguyễn Khánh Duy </h3>
+        <h4 class="id"> ID: ITDSIU18049
+        <h4 class="course"> Course: Data science and data visualization </h4>
+        <h4 class="labtitle"> Lab 1 - Introduction to HTML, CSS, SVG and JavaScript </h4>
+        <p> This is all my own work. I did not copy the code from any other source </p>
+
+        <element>
+          <svg id= "initials" width="350" height="150">
+            <text x="150" y="25">Trần Nguyễn Khánh Duy</text>
+            <line x1="10" y1="30" x2="42" y2="30" stroke="#FF69B4" stroke-width="5" stroke-linecap="round"/>
+            <line x1="26" y1="30" x2="26" y2="55" stroke="#FF69B4" stroke-width="5" stroke-linecap="round"/>
+            <line x1="49" y1="30" x2="49" y2="55" stroke="#FF1493" stroke-width="5" stroke-linecap="round"/>
+			<line x1="70" y1="30" x2="70" y2="55" stroke="#FF1493" stroke-width="5" stroke-linecap="round"/>
+			<line x1="49" y1="30" x2="70" y2="55" stroke="#FF1493" stroke-width="5" stroke-linecap="round"/>
+            <line x1="77" y1="30" x2="77" y2="55" stroke="#DB7093" stroke-width="5" stroke-linecap="round"/>
+            <line x1="95" y1="55" x2="77" y2="42.5" stroke="#DB7093" stroke-width="5" stroke-linecap="round"/>
+            <line x1="77" y1="42.5" x2="95" y2="30" stroke="#DB7093" stroke-width="5" stroke-linecap="round"/>
+            <line x1="102" y1="30" x2="102" y2="40" stroke="#C71585" stroke-width="5" stroke-linecap="round"/>
+			<line x1="102" y1="45" x2="102" y2="55" stroke="#C71585" stroke-width="5" stroke-linecap="round"/>
+            <line x1="102" y1="55" x2="120" y2="55" stroke="#C71585" stroke-width="5" stroke-linecap="round"/>
+			<line x1="102" y1="30" x2="120" y2="30" stroke="#C71585" stroke-width="5" stroke-linecap="round"/>
+			<line x1="120" y1="30" x2="120" y2="40" stroke="#C71585" stroke-width="5" stroke-linecap="round"/>
+			<line x1="120" y1="45" x2="120" y2="55" stroke="#C71585" stroke-width="5" stroke-linecap="round"/>
+			
+          </svg>
+          <div id="chart"></div>
+            <script>
+              var  height=300, width=300;
+              var svgg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+              svgg.setAttribute("height", height);
+              svgg.setAttribute("width", width);
+              var main = document.getElementById("chart");
+              main.appendChild(svgg);
+
+
+              var myname = prompt("Please enter something").toLowerCase();
+              var stringBase = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','_'];
+              var countObject = {} ;
+
+              function characterCount(word, character) {
+                var count = 0;
+                  for (var i = 0; i < word.length; i++) {
+                    if (word[i] === character) {
+                     count++;
+                     }
+                   }
+                   return count;
+                 }
+                 for (var i = 0, l = stringBase.length; i < l; i++) {
+                   var currentChar = stringBase[i];
+                   countObject[currentChar] = characterCount(myname, currentChar);
+                 }
+                 var AD= countObject.a+ countObject.b+countObject.c+countObject.d;
+                 var EH= countObject.e+ countObject.f+countObject.g+countObject.h;
+                 var IL= countObject.i+ countObject.j+countObject.k+countObject.l;
+                 var MP= countObject.m+ countObject.n+countObject.o+countObject.p;
+                 var QU= countObject.q+countObject.r+ countObject.s+countObject.t+countObject.u;
+                 var VZ= countObject.v+countObject.w+ countObject.x+countObject.y+countObject.z;
+
+                function createhistogram(svg, name, attrs)
+                  {
+                    var element = document.createElementNS("http://www.w3.org/2000/svg", name);
+                    if (attrs === undefined) attrs = {};
+                    for (var key in attrs) {
+                      element.setAttributeNS(null, key, attrs[key]);
+                      }
+                      element.setAttributeNS(null, 'transform', 'translate(0,800)');
+                      element.setAttributeNS(null, 'transform', 'scale(1,-1)');
+                      svg.appendChild(element);
+                    }
+
+                var data=[AD, EH, IL, MP, QU, VZ];
+                data.forEach(function(a,b) {
+                 var rect = createhistogram(svgg, "rect", {"x" : 10+10*b, "y" : -250, "width" : 9.5, "height" : 25*a, "fill": "#00A170", "stroke" : "black"})
+                  });
+
+              </script>
+            <svg width="1200" height="1000" transform="matrix(0 0 0 -1 -1 -1)" </svg>
+        </element>
+    </body>
+</html>
