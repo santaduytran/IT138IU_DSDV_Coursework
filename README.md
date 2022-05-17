@@ -1,5 +1,5 @@
 # IT138IU_DSDV_Coursework
-These are my lab assignments for IT138IU Data Science & Data Visualization course at HCMIU.
+My lab assignments for IT138IU Data Science & Data Visualization course at HCMIU.
 1. Lab 01: Introduction to SVG, HTML and JavaScript
 2. Lab 02: Introduction to D3.js
 3. Lab 03: D3.js - Scales
