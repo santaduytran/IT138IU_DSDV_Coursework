@@ -1,0 +1,198 @@
+<html>
+  <head>
+    <title>Lab 7 - COVID19 in VN</title>
+    <h3>TRAN NGUYEN KHANH DUY</h3>
+    <h3>ITDSIU18049</h3>
+    <h3>Course: Data science and data visualization</h3>
+    <h3>Lab 7 - D3.js - GeoMapping</h3>
+	<h4> A choropleth map of Vietnam for COVID confirmed cases by provinces </h4>
+    <p> This is all my own work. I did not copy the code from any other source.</p>
+  </head>
+  
+  <body>
+    <script type = "text/javascript" src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+    <script src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
+    <script type= "text/javascript">
+    
+	var w = 1500;
+    var h = 1500;
+    var active = d3.select(null);
+
+    var svg = d3.select("body")
+                .append("svg")
+                .attr("width",w)
+                .attr("height",h)
+                .attr("cursor", "pointer")
+                .on("click", stopped, true);
+
+
+          function clicked(d) {
+  if (active.node() === this) return reset();
+  active.classed("active", false);
+  active = d3.select(this).classed("active", true);
+
+  var bounds = path.bounds(d),
+      dx = bounds[1][0] - bounds[0][0],
+      dy = bounds[1][1] - bounds[0][1],
+      x = (bounds[0][0] + bounds[1][0]) / 2,
+      y = (bounds[0][1] + bounds[1][1]) / 2,
+      scale = Math.max(1, Math.min(8, 0.9 / Math.max(dx / w, dy / h))),
+      translate = [w / 2 - scale * x, h / 2 - scale * y];
+
+  svg.transition()
+     .duration(750)
+     .call( zoom.transform, d3.zoomIdentity.translate(translate[0],translate[1]).scale(scale) );
+}
+
+function reset() {
+  active.classed("active", false);
+  active = d3.select(null);
+
+  svg.transition()
+     .duration(750)
+     .call( zoom.transform, d3.zoomIdentity );
+}
+
+function zoomed() {
+  g.style("stroke-width", 1.5 / d3.event.transform.k + "px");
+  g.attr("transform", d3.event.transform);
+}
+
+function stopped() {
+  if (d3.event.defaultPrevented) d3.event.stopPropagation();
+}
+var zoom = d3.zoom()
+    .scaleExtent([1, 15])
+    .on("zoom", zoomed);
+
+         svg.append("rect")
+            .attr("class", "background")
+            .attr("width", w)
+            .attr("height", h)
+            .attr("fill","white")
+            .on("click", reset);
+
+const g = svg.append("g");
+            var data = d3.map();
+            var projection = d3.geoMercator()
+              .scale([h/(2*Math.PI)])
+              .center([0,15])
+              .translate([w/2 , h /2])
+
+svg.call(zoom);
+                  d3.csv ("https://raw.githubusercontent.com/santaduytran/IT138IU_DSDV_Coursework/main/Lab%207%20-%20D3.js%20-%20GeoMapping/Lab7.csv", function(d) {
+                              return {province: d["Tỉnh thành"],
+                                      ma:d.ma,
+                                      confirmed: d["Ca nhiễm"]};
+                                    })
+                                .then(function(data){
+                        d3.json("https://raw.githubusercontent.com/TungTh/tungth.github.io/master/data/vn-provinces.json").then(function (json){
+
+                            console.log(data);
+                            console.log(json);
+                                    for (var i = 0; i < data.length; i++) {
+                                          var dataMa = parseFloat(data[i].ma);
+                                          var dataValue = parseFloat(data[i].confirmed);
+
+                                    for (var j = 0; j < json.features.length; j++) {
+                                          var jsonMa = parseFloat(json.features[j].properties.Ma);
+                                        if (dataMa == jsonMa) {
+                                          json.features[j].properties.value = dataValue;
+                                          break;
+                                     }
+                                  }
+                              }
+                      //    svg.call(tip);
+                          var center = d3.geoCentroid(json)
+                                var scale  = 50;
+                                var offset = [w/2, h/2];
+                                var projection = d3.geoMercator().scale(scale).center(center)
+                                    .translate(offset);
+
+                                var path = d3.geoPath().projection(projection);
+
+                                var bounds  = d3.geoBounds(json);
+                                var hscale  = scale*w  / (bounds[1][0] - bounds[0][0]);
+                                var vscale  = scale*h / (bounds[1][1] - bounds[0][1]);
+                                var scale   = (hscale < vscale) ? hscale : vscale;
+                      //          var offset  = [w - (bounds[0][0] + bounds[1][0])/2,
+                        //                          h - (bounds[0][1] + bounds[1][1])/2];
+
+                        var scaleColor = d3.scaleLinear()
+                                            .domain([d3.min(data,function(d){return d.confirmed;}), d3.max(data,function(d){return d.confirmed})])
+                                            .range(["lightblue","blue"]);
+
+                                projection = d3.geoMercator().center(center)
+                                  .scale(scale).translate(offset);
+                                path = path.projection(projection);
+
+                        const tooltip = d3.selectAll("body").append("div")
+                                          .attr("class", "tooltip")
+                                          .style("opacity", 0)
+                                          .style("background","white")
+                                          .style("border","solid")
+                                          .style("border-width","1px")
+                                          .style("border-radius","5px")
+                                          .style("position", "absolute");
+
+                        let mouseOver = function(d) {
+                          d3.select(this)
+                            .transition()
+                            .duration(200)
+                            .style("opacity", 1)
+                            .style("stroke", "black")
+                            tooltip.transition()
+                                   .duration(100)
+                                   .style("opacity",1)
+                            tooltip.html(d.properties.Name+ "<br/>" + "<span>"+ (d.properties.value) +"</span> cases")
+                                   .style('left', d3.event.pageX + 'px')
+                                   .style('top', d3.event.pageY - 28 + 'px');
+                          }
+
+
+                        let mouseout = function(d) {
+                          d3.select(this)
+                            .transition()
+                            .duration(200)
+                            .style("stroke", "transparent")
+                           tooltip.transition()
+                                 .duration(200)
+                               .style("opacity", 0);
+
+                        }
+
+
+                       var map =   g
+                          .selectAll("path")
+                          .data(json.features)
+                          .enter()
+                          .append("path")
+                            .attr("d", path)
+                            .attr("cursor", "pointer")
+                            .style("fill", function(d) {
+                                var value = d.properties.value;
+                                    if (value) {
+                                      return scaleColor(value);
+                                   } else {
+                                return "#ccc";
+                                 }
+                               })
+                            .style("stroke", "transparent")
+                            .attr("class", function(d){ return "province" } )
+                            .style("opacity", .8)
+                            .on("mouseover", mouseOver )
+                            .on("mouseout", mouseout )
+                            .on("click",clicked)
+
+
+
+                          })
+
+
+                        })
+
+
+    </script>
+  </body>
+</html>

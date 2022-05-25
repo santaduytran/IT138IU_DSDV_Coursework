@@ -1,0 +1,138 @@
+<html>
+  <head>
+    <title>Lab 7 - Viet Nam</title>
+    <h3>TRAN NGUYEN KHANH DUY</h3>
+    <h3>ITDSIU18049</h3>
+    <h3>Course: Data science and data visualization</h3>
+    <h3>Lab 7 - D3.js - GeoMapping</h3>
+	<h4>A choropleth of Vietnam</h4>
+    <p> This is all my own work. I did not copy the code from any other source.</p>
+  </head>
+  
+  <body>
+    <script type = "text/javascript" src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+    <script src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
+    <script type= "text/javascript">
+    
+	var w = 1500;
+    var h = 1500;
+
+    var svg = d3.select("body")
+                .append("svg")
+                .attr("width",w)
+                .attr("height",h)
+                .attr("cursor","pointer");
+const g = svg.append("g");
+            var data = d3.map();
+            var projection = d3.geoMercator()
+              .scale([h/(2*Math.PI)])
+              .center([0,15])
+              .translate([w/2 , h /2]);
+
+              svg.call(d3.zoom().on('zoom', () => {
+                g.attr('transform', d3.event.transform);
+              }));
+
+                  d3.csv ("https://raw.githubusercontent.com/TungTh/tungth.github.io/master/data/vn-provinces-data.csv", function(d) {
+                              return {province: d.province,
+                                      ma:d.ma,
+                                      density: d.density};
+                                    })
+                                .then(function(data){
+                        d3.json("https://raw.githubusercontent.com/TungTh/tungth.github.io/master/data/vn-provinces.json").then(function (json){
+
+                            console.log(data);
+                            console.log(json);
+                                    for (var i = 0; i < data.length; i++) {
+                                          var dataMa = parseFloat(data[i].ma);
+                                          var dataValue = parseFloat(data[i].density);
+
+                                    for (var j = 0; j < json.features.length; j++) {
+                                          var jsonMa = parseFloat(json.features[j].properties.Ma);
+                                        if (dataMa == jsonMa) {
+                                          json.features[j].properties.value = dataValue;
+                                          break;
+                                     }
+                                  }
+                              }
+
+                          var center = d3.geoCentroid(json)
+                                var scale  = 50;
+                                var offset = [w/2, h/2];
+                                var projection = d3.geoMercator().scale(scale).center(center)
+                                    .translate(offset);
+
+                                var path = d3.geoPath().projection(projection);
+
+                                var bounds  = d3.geoBounds(json);
+                                var hscale  = scale*w  / (bounds[1][0] - bounds[0][0]);
+                                var vscale  = scale*h / (bounds[1][1] - bounds[0][1]);
+                                var scale   = (hscale < vscale) ? hscale : vscale;
+
+                        var scaleColor = d3.scaleLinear()
+                                            .domain([d3.min(data,function(d){return d.density;}), d3.max(data,function(d){return d.density;})])
+                                            .range(['lightblue','blue']);
+                                projection = d3.geoMercator().center(center)
+                                  .scale(scale).translate(offset);
+                                path = path.projection(projection);
+
+                        const tooltip = d3.selectAll("body").append("div")
+                                          .attr("class", "tooltip")
+                                          .style("opacity", 0)
+                                          .style("background","white")
+                                          .style("border","solid")
+                                          .style("border-width","1px")
+                                          .style("border-radius","5px")
+                                          .style("position", "absolute");
+
+                        let mouseOver = function(d) {
+                          d3.select(this)
+                            .transition()
+                            .duration(200)
+                            .style("opacity", 1)
+                            .style("stroke", "black")
+                            tooltip.transition()
+                                   .duration(100)
+                                   .style("opacity",1)
+                            tooltip.html(d.properties.Name+ "<br/>" + "<span>"+ (d.properties.value) +"</span> people/km2")
+                                   .style('left', d3.event.pageX + 'px')
+                                   .style('top', d3.event.pageY - 28 + 'px');
+                          }
+
+
+                        let mouseout = function(d) {
+                          d3.select(this)
+                            .transition()
+                            .duration(200)
+                            .style("stroke", "white")
+                           tooltip.transition()
+                                 .duration(200)
+                               .style("opacity", 0);
+
+                        }
+
+                        g
+                          .selectAll("path")
+                          .data(json.features)
+                          .enter()
+                          .append("path")
+                            .attr("d", path)
+                            .attr("cursor","pointer")
+                            .style("fill", function(d) {
+                                return scaleColor(d.properties.value);
+                                 })
+                            .style("stroke", "white")
+                            .attr("class", function(d){ return "province" } )
+                            .style("opacity", .8)
+                            .on("mouseover", mouseOver )
+                            .on("mouseout", mouseout )
+                          })
+
+                        })
+
+
+    </script>
+
+  </body>
+</html>
